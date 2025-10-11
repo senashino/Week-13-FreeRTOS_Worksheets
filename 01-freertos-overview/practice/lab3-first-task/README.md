@@ -413,14 +413,19 @@ ESP_LOGI(TAG, "Task state: %s", state_names[state]);
 - [ ] ใช้ Task management APIs (suspend/resume)
 - [ ] แสดง runtime statistics
 - [ ] ทำแบบฝึกหัดครบ
-
+![alt text](image.png)
 ## คำถามทบทวน
 
 1. เหตุใด Task function ต้องมี infinite loop?
+    // เพราะ Task มีชีวิตอยู่ตลอดคอยทำงานซ้ำ ๆ หาก return ออก ฟังก์ชันจะจบและ Task ถูกลบทิ้ง
 2. ความหมายของ stack size ใน xTaskCreate() คืออะไร?
+    // คือหน่วยความจำของ stack สำหรับ local vars/return addr/ขณะสลับบริบท (ระบุเป็น “word” ใน FreeRTOS แต่ใน ESP-IDF กำหนดเป็น bytes)
 3. ความแตกต่างระหว่าง vTaskDelay() และ vTaskDelayUntil()?
+    // vTaskDelay() หน่วงแบบสัมพัทธ์ (นับตั้งแต่เรียก), vTaskDelayUntil() หน่วงแบบสัมบูรณ์ (อิง tick อ้างอิง คุม period แม่นกว่า)
 4. การใช้ vTaskDelete(NULL) vs vTaskDelete(handle) ต่างกันอย่างไร?
+    // NULL = ลบตัวเอง, handle = ลบ task ตัวอื่นตาม handle ที่ระบุ
 5. Priority 0 กับ Priority 24 อันไหนสูงกว่า?
+    // 24 สูงกว่า (ตัวเลขมาก = ความสำคัญมากกว่า)
 
 ## บทสรุป
 
