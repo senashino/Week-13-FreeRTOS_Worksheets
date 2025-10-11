@@ -270,24 +270,32 @@ void demonstrate_problems(void)
 ### 1. การวัด CPU Utilization
 - สังเกตการแสดงสถิติทุก 20 context switches
 - บันทึกค่า CPU utilization และ overhead
+![alt text](image.png)
 
 ### 2. การทดสอบ Time Slice ต่างๆ
 - ทดสอบ time slice: 10ms, 25ms, 50ms, 100ms, 200ms
 - เปรียบเทียบประสิทธิภาพ
+![alt text](image-1.png)
 
 ### 3. การสังเกต LED Pattern
 - LED1: Sensor task (งานเบา)
 - LED2: Processing task (งานหนัก)
 - LED3: Actuator task (งานปานกลาง)
 - LED4: Display task (งานเบา)
+![alt text](image-2.png)
 
 ## คำถามสำหรับวิเคราะห์
 
 1. Time slice ขนาดไหนให้ประสิทธิภาพดีที่สุด? เพราะอะไร?
+    // ประสิทธิภาพดีที่สุด: สไลซ์ ใหญ่ (≈100–200 ms) เพราะสลับงานน้อย → overhead ต่ำ → efficiency สูงสุด
 2. ปัญหาอะไรที่เกิดขึ้นเมื่อ time slice สั้นเกินไป?
+    // สไลซ์สั้นเกินไป: สลับงานถี่ → overhead สูง, jitter มาก, cache ไม่คุ้ม, งานยาวโดนหั่นบ่อย
 3. ปัญหาอะไรที่เกิดขึ้นเมื่อ time slice ยาวเกินไป?
+    // สไลซ์ยาวเกินไป: latency สูง, ระบบตอบสนองช้า, งานสั้น ๆ มีเวลาเหลือทิ้ง
 4. Context switching overhead คิดเป็นกี่เปอร์เซ็นต์ของเวลาทั้งหมด?
+    // Context switching overhead (%): ดูจาก log = 100% − Efficiency
 5. งานไหนที่ได้รับผลกระทบมากที่สุดจากการ time-sharing?
+    // งานที่กระทบสุด: งานหนัก/ยาว เช่น Processing task (โดนแบ่ง/ขัดจังหวะบ่อยเมื่อสไลซ์สั้น)
 
 ## ผลการทดลองที่คาดหวัง
 
