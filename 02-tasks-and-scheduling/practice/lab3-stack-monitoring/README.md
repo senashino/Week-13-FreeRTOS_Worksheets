@@ -453,10 +453,16 @@ void dynamic_stack_monitor(TaskHandle_t task_handle, const char* task_name)
 ## คำถามสำหรับวิเคราะห์
 
 1. Task ไหนใช้ stack มากที่สุด? เพราะอะไร?
+    // HeavyTask ใช้ stack มากที่สุด เพราะมีการประกาศตัวแปรขนาดใหญ่ภายในฟังก์ชัน
 2. การใช้ heap แทน stack มีข้อดีอย่างไร?
+    // การใช้ heap (malloc/free) จะช่วยลดการใช้หน่วยความจำของ stack เพราะหน่วยความจำขนาดใหญ่ถูกจัดสรรใน heap ซึ่งมีพื้นที่รวมมากกว่าและไม่จำกัดตามขนาด stack ของแต่ละ task
 3. Stack overflow เกิดขึ้นเมื่อไหร่และทำอย่างไรป้องกัน?
+    // เกิดขึ้นเมื่อ task ใช้หน่วยความจำ stack เกินขนาดที่กำหนดไว้ เช่น การประกาศตัวแปรใหญ่เกินไป หรือ recursion ลึกเกินไป
+    // วิธีป้องกัน: ตั้งค่า stack size ให้เพียงพอ, ใช้ heap สำหรับข้อมูลขนาดใหญ่, เปิดการตรวจจับ stack overflow (CONFIG_FREERTOS_CHECK_STACKOVERFLOW=2), และตรวจสอบค่าคงเหลือของ stack เป็นระยะ
 4. การตั้งค่า stack size ควรพิจารณาจากอะไร?
+    // ควรพิจารณาจากลักษณะการทำงานของ task เช่น จำนวนตัวแปรภายใน, การเรียกฟังก์ชันซ้อนกัน, ความถี่ในการใช้หน่วยความจำ, และเผื่อพื้นที่สำหรับ worst-case เพื่อป้องกัน overflow
 5. Recursion ส่งผลต่อ stack usage อย่างไร?
+    // Recursion ใช้ stack เพิ่มขึ้นตามระดับความลึกของการเรียกฟังก์ชัน เพราะแต่ละชั้นของการเรียกจะสร้างตัวแปร local และข้อมูลการ return ใหม่บน stack ทำให้หน่วยความจำลดลงอย่างรวดเร็วและเสี่ยงต่อการเกิด stack overflow
 
 ## ผลการทดลองที่คาดหวัง
 
@@ -466,6 +472,7 @@ void dynamic_stack_monitor(TaskHandle_t task_handle, const char* task_name)
 | Medium | 2048 bytes | 600-800 bytes used | Safe |
 | Heavy | 2048 bytes | 1400-1800 bytes used | Warning |
 | Recursion | 3072 bytes | Varies by depth | Monitor |
+![alt text](image.png)
 
 ## การแก้ไขปัญหา Stack Overflow
 

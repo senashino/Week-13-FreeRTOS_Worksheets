@@ -325,6 +325,7 @@ void priority_inversion_low(void *pvParameters)
 3. **ดู Serial Monitor**:
    - สังเกตลำดับการทำงาน
    - ดูสถิติการทำงาน
+    ![alt text](image.png)
 
 ### การวิเคราะห์ผลลัพธ์
 - **High Priority Task** ควรทำงานมากที่สุด
@@ -366,10 +367,15 @@ xTaskCreatePinnedToCore(low_priority_task, "LowPrio", 3072, NULL, 1, NULL, 1);  
 ## คำถามสำหรับวิเคราะห์
 
 1. Priority ไหนทำงานมากที่สุด? เพราะอะไร?
+    // High — เพราะ FreeRTOS เป็น preemptive, priority-based: มี ready task ที่ prio สูงสุดจะได้ CPU ก่อนเสมอ
 2. เกิด Priority Inversion หรือไม่? จะแก้ไขได้อย่างไร?
+    // เกิดได้เมื่อ Low ถือ resource ขณะ High ต้องใช้ และ Medium แทรก CPU → แก้ด้วย Mutex (priority inheritance), ปรับดีไซน์ให้ชิ้นงานวิกฤตสั้นลง, ใช้ ceilings หรือ disable preemption ช่วงสั้นๆ (ระวัง)
 3. Tasks ที่มี priority เดียวกันทำงานอย่างไร?
+    // Round-Robin ตาม tick: แต่ละตัวได้ time slice เท่าๆ กัน (ตราบเท่าที่ยัง ready)
 4. การเปลี่ยน Priority แบบ dynamic ส่งผลอย่างไร?
+    // สามารถ “ดัน” task บางตัวให้ขึ้นมากิน CPU ทันทีที่ ready → ระวัง starve งานระดับต่ำ และระวัง logic กลับไปค่าเดิมเสมอ
 5. CPU utilization ของแต่ละ priority เป็นอย่างไร?
+    // ขึ้นกับ delay/workload; โดยทั่วไป High > Med > Low; ดูจริงจาก vTaskGetRunTimeStats() ในผลลัพธ์
 
 ## ผลการทดลองที่คาดหวัง
 

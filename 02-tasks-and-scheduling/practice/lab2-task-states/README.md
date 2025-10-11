@@ -397,6 +397,7 @@ void monitor_task_states(void)
 3. **กดปุ่ม GPIO35** เพื่อให้ semaphore
 4. **ดู Serial Monitor** เพื่อดู state transitions
 
+
 ### สิ่งที่ควรสังเกต
 - **Running**: LED GPIO2 สว่าง + การประมวลผล
 - **Ready**: LED GPIO4 สว่าง + รอ CPU
@@ -470,10 +471,15 @@ void update_state_display(eTaskState current_state)
 ## คำถามสำหรับวิเคราะห์
 
 1. Task อยู่ใน Running state เมื่อไหร่บ้าง?
+    // เมื่อได้รับ CPU และกำลัง execute
 2. ความแตกต่างระหว่าง Ready และ Blocked state คืออะไร?
+    // Ready รอ CPU แต่ Blocked รอเหตุการณ์ (เช่น semaphore, delay)
 3. การใช้ vTaskDelay() ทำให้ task อยู่ใน state ใด?
+    // Blocked
 4. การ Suspend task ต่างจาก Block อย่างไร?
+    // Suspend ถูกหยุดโดยเจตนา (manual) ไม่ขึ้นกับเวลา
 5. Task ที่ถูก Delete จะกลับมาได้หรือไม่?
+    // ไม่ได้ ต้องสร้างใหม่ด้วย xTaskCreate() เท่านั้น
 
 ## ผลการทดลองที่คาดหวัง
 
@@ -483,6 +489,8 @@ void update_state_display(eTaskState current_state)
 | Ready | รอ CPU | GPIO4 | สั้นมาก |
 | Blocked | รอ semaphore/delay | GPIO5 | ยาว |
 | Suspended | กดปุ่ม | GPIO18 | จนกว่าจะ resume |
+
+![alt text](image.png)
 
 ## บทสรุป
 
