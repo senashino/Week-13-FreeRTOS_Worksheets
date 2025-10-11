@@ -291,19 +291,24 @@ void app_main(void)
 1. Build และ flash โปรแกรมโดย uncomment `test_cooperative_multitasking()`
 2. กดปุ่มหลายครั้งและสังเกตเวลาตอบสนอง
 3. บันทึกเวลาตอบสนองสูงสุด
-
+![alt text](image.png)
 ### การทดสอบ Preemptive System
 1. แก้ไขโค้ดโดย uncomment `test_preemptive_multitasking()`
 2. Build และ flash ใหม่
 3. กดปุ่มหลายครั้งและเปรียบเทียบเวลาตอบสนอง
-
-## คำถามสำหรับวิเคราะห์
+![alt text](image-1.png)
+    ## คำถามสำหรับวิเคราะห์
 
 1. ระบบไหนมีเวลาตอบสนองดีกว่า? เพราะอะไร?
+    // Preemptive เพราะ RTOS สามารถบังคับให้ task สำคัญรันได้ทันทีโดยไม่ต้องรอการ yield
 2. ข้อดีของ Cooperative Multitasking คืออะไร?
+    // โค้ดง่าย, ใช้หน่วยความจำน้อย, ไม่มีการ context switch โดยไม่จำเป็น
 3. ข้อเสียของ Cooperative Multitasking คืออะไร?
+    // ถ้า task หนึ่งไม่ yield → ทั้งระบบค้างหรือตอบสนองช้า
 4. ในสถานการณ์ใดที่ Cooperative จะดีกว่า Preemptive?
+    // งานง่ายๆ ที่ไม่ต้องการ real-time เช่น ระบบแสดงผล LED หรืองานลำดับคงที่
 5. เหตุใด Preemptive จึงเหมาะสำหรับ Real-time systems?
+    // เพราะสามารถ ควบคุมลำดับและเวลาการตอบสนองได้แน่นอน
 
 ## ผลการทดลองที่คาดหวัง
 
