@@ -807,21 +807,26 @@ void app_main(void) {
 1. สังเกต Serial Monitor เมื่อ patterns ถูกจดจำ
 2. ติดตาม LED changes ตาม detected patterns
 3. วิเคราะห์ event correlation และ timing
+    ![1](image.png)
 
 ### ทดลองที่ 2: State Machine Behavior
 1. สังเกตการเปลี่ยน home states
 2. ติดตาม state transitions ใน logs
 3. ทดสอบ emergency mode activation
+    ![2](image-1.png)
 
 ### ทดลองที่ 3: Adaptive Learning
 1. สังเกตการปรับ motion sensitivity
 2. ติดตาม pattern confidence changes
 3. วิเคราะห์ learning behavior ในระยะยาว
+    ![3](image-2.png)
 
 ### ทดลองที่ 4: Real-world Scenarios
 1. จำลอง "leaving home" scenario
 2. ทดสอบ "break-in detection"
 3. สังเกต "goodnight routine" automation
+    ![4](image-3.png)
+
 
 ## 📊 Advanced Event Analysis
 
