@@ -476,12 +476,15 @@ void app_main(void) {
 2. สังเกต LED indicators ที่เปิดตามลำดับ:
    - Network → Sensor → Config → Storage → System Ready
 3. สังเกตข้อความใน Serial Monitor แสดงการรอและการ synchronization
+    ![1](image.png)
+
 
 ### ทดลองที่ 2: Event Conditions Testing
 ใน Serial Monitor จะเห็น:
 - **Phase 1**: รอ Network + Config (ANY condition)
 - **Phase 2**: รอทุก subsystems (ALL condition)
 - **Event Monitor**: แสดงการตรวจสอบ events แบบต่างๆ
+    ![2](image-1.png)
 
 ### ทดลองที่ 3: System Resilience
 สังเกตการจำลอง system failures:
@@ -489,6 +492,7 @@ void app_main(void) {
 - Sensor out-of-range conditions  
 - Configuration corruption
 - Storage space warnings
+    ![3](image-2.png)
 
 ### ทดลองที่ 4: Timing Analysis
 แก้ไข delay times เพื่อทดสอบ:
@@ -497,6 +501,7 @@ void app_main(void) {
 vTaskDelay(pdMS_TO_TICKS(5000)); // เพิ่มเป็น 5 วินาที
 // สังเกต timeout behaviors
 ```
+![4](image-3.png)
 
 ## 📊 การวิเคราะห์ Event Patterns
 
