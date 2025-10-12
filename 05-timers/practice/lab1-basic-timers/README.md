@@ -353,13 +353,15 @@ void app_main(void) {
    - LED_HEARTBEAT: กะพริบคู่ทุก 2 วินาที
    - LED_STATUS: กะพริบยาวทุก 5 วินาที
    - LED_ONESHOT: กะพริบ 5 ครั้งเร็วเมื่อ one-shot timer ทำงาน
-
+![1](image.png)
 ### ทดลองที่ 2: ปรับ Timer Configuration
 แก้ไขใน `menuconfig`:
 ```
 CONFIG_FREERTOS_TIMER_TASK_PRIORITY=1  // ลด priority
+
 CONFIG_FREERTOS_TIMER_QUEUE_LENGTH=5   // ลดขนาด queue
 ```
+![2](image-1.png)
 
 ### ทดลองที่ 3: เพิ่ม Timer Load
 เพิ่ม timers เพิ่มเติม:
@@ -371,6 +373,7 @@ for (int i = 0; i < 10; i++) {
     xTimerStart(extra_timer, 0);
 }
 ```
+![3](image-2.png)
 
 ## 📋 สรุปผลการทดลอง
 
