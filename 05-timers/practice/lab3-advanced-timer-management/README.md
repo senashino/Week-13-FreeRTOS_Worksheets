@@ -636,22 +636,26 @@ void app_main(void) {
 1. สังเกตการจัดสรร Timer จาก Pool
 2. ตรวจสอบ Pool Utilization
 3. ทดสอบการจัดการ Dynamic Timers
+   ![1](image.png)
 
 ### ทดลองที่ 2: Performance Analysis
 1. สังเกต Callback Duration Statistics  
 2. วิเคราะห์ Timer Accuracy
 3. ตรวจสอบ Performance Warnings
+    ![2](image-1.png)
 
 ### ทดลองที่ 3: Stress Testing
 1. รัน Stress Test กับ Timer จำนวนมาก
 2. สังเกต System Performance ภายใต้ Load
 3. ตรวจสอบ Memory Usage และ Health Metrics
+ ![3](image-2.png)
 
 ### ทดลองที่ 4: Health Monitoring
 1. สังเกต Health Reports
 2. ตรวจสอบ Error Conditions
 3. วิเคราะห์ System Recovery
-
+    ![4](image-3.png)
+    
 ## 📊 การวิเคราะห์ผลขั้นสูง
 
 ### Performance Benchmarks
@@ -673,10 +677,16 @@ Expected Performance:
 ## 📋 Advanced Analysis Questions
 
 1. **Service Task Priority**: ผลกระทบของ Priority ต่อ Timer Accuracy?
+    // Timer Accuracy
+    ยิ่ง priority สูง โอกาส jitter จาก preemption โดยงานอื่นยิ่งน้อย → accuracy สูงขึ้น แต่ถ้าสูงเกินไปอาจแย่ง CPU จากงานสำคัญอื่น ควรบาลานซ์กับโหลดจริง (อิงค่า accuracy% ที่วัด)
 2. **Callback Performance**: วิธีการเพิ่มประสิทธิภาพ Callback Functions?
+    // ทำงานให้น้อยที่สุดใน callback
 3. **Memory Management**: กลยุทธ์การจัดการ Memory สำหรับ Dynamic Timers?
+    // ใช้ static allocation เมื่อทำได้
 4. **Error Recovery**: วิธีการ Handle Timer System Failures?
-5. **Production Deployment**: การปรับแต่งสำหรับ Production Environment?
+    // ห่อคำสั่งด้วยฟังก์ชันแบบ retry
+5. **Production Deployment**: การปรับแต่งสำหรับ Production Environment? 
+    // วัดจริงบนโหลดจริง → ปรับ TIMER_TASK_PRIORITY, QUEUE_LENGTH, callback budget (<1 ms)
 
 ## 🚀 ความท้าทายระดับผู้เชี่ยวชาญ
 
