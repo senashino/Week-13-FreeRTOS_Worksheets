@@ -3,153 +3,188 @@
 #include <string.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+#include "freertos/semphr.h"
 #include "esp_log.h"
 #include "driver/gpio.h"
 #include "esp_random.h"
 
-static const char *TAG = "NO_MUTEX_LAB";
+static const char *TAG = "MUTEX_EXP3";
 
-// LED pins for different tasks
-#define LED_TASK1 GPIO_NUM_2
-#define LED_TASK2 GPIO_NUM_4
-#define LED_TASK3 GPIO_NUM_5
-#define LED_CRITICAL GPIO_NUM_18
+/* ====== PRIORITY SETUP (Experiment 3) ======
+ * เปลี่ยนให้ LOW สูงสุด และ HIGH ต่ำสุด
+ * ดูผลว่าใครเข้าถึงทรัพยากรบ่อยขึ้น และ mutex ยังกัน corruption ได้
+ */
+#define PRIORITY_HIGH      2
+#define PRIORITY_MED       3
+#define PRIORITY_LOW       5
+#define PRIORITY_CPU_BURST 4   // งานกลางกิน CPU (ไม่จับ mutex) เพื่อกดดัน scheduler
+#define PRIORITY_MONITOR   1
 
-// Shared resources (ไม่มี Mutex ป้องกัน)
+// GPIO (ปรับตามบอร์ดได้)
+#define LED_TASK1    GPIO_NUM_2   // HIGH_PRI
+#define LED_TASK2    GPIO_NUM_4   // MED_PRI
+#define LED_TASK3    GPIO_NUM_5   // LOW_PRI
+#define LED_CRITICAL GPIO_NUM_18  // กำลังอยู่ใน critical section
+
+// Mutex
+static SemaphoreHandle_t xMutex;
+
+/* -------- Shared Resource -------- */
 typedef struct {
     uint32_t counter;
-    char shared_buffer[100];
+    char     shared_buffer[100];
     uint32_t checksum;
     uint32_t access_count;
 } shared_resource_t;
 
-shared_resource_t shared_data = {0, "", 0, 0};
+static shared_resource_t shared_data = {0,"",0,0};
 
 typedef struct {
-    uint32_t access_total;
+    uint32_t successful_access;
+    uint32_t failed_access;
     uint32_t corruption_detected;
 } access_stats_t;
 
-access_stats_t stats = {0, 0};
+static access_stats_t stats = {0,0,0};
 
-// Function to calculate simple checksum
-uint32_t calculate_checksum(const char* data, uint32_t counter) {
-    uint32_t sum = counter;
-    for (int i = 0; data[i] != '\0'; i++) {
-        sum += (uint32_t)data[i] * (i + 1);
-    }
+/* -------- Utils -------- */
+static uint32_t checksum(const char* s, uint32_t c){
+    uint32_t sum = c;
+    for (int i=0; s[i]!='\0'; ++i) sum += (uint32_t)s[i]*(i+1);
     return sum;
 }
+static void led_setup(gpio_num_t pin){ gpio_reset_pin(pin); gpio_set_direction(pin, GPIO_MODE_OUTPUT); gpio_set_level(pin,0); }
 
-// Critical section (ไม่มี Mutex)
-void access_shared_resource(const char* task_name, gpio_num_t led_pin) {
-    char temp_buffer[100];
-    uint32_t temp_counter;
-    uint32_t expected_checksum;
+/* -------- Critical Section (with mutex) -------- */
+static void access_shared(const char* name, gpio_num_t led_pin, int hold_ms){
+    ESP_LOGI(TAG, "[%s] Requesting…", name);
+    if (xSemaphoreTake(xMutex, pdMS_TO_TICKS(5000)) == pdTRUE){
+        stats.successful_access++;
+        gpio_set_level(led_pin,1); gpio_set_level(LED_CRITICAL,1);
 
-    gpio_set_level(led_pin, 1);
-    gpio_set_level(LED_CRITICAL, 1);
+        // read
+        uint32_t c  = shared_data.counter;
+        char buf[100]; strcpy(buf, shared_data.shared_buffer);
+        uint32_t exp = shared_data.checksum;
 
-    // === CRITICAL SECTION (ไม่ปลอดภัย) ===
-    temp_counter = shared_data.counter;
-    strcpy(temp_buffer, shared_data.shared_buffer);
-    expected_checksum = shared_data.checksum;
-
-    uint32_t calc = calculate_checksum(temp_buffer, temp_counter);
-    if (calc != expected_checksum && shared_data.access_count > 0) {
-        ESP_LOGE(TAG, "[%s] ⚠️ DATA CORRUPTION DETECTED!", task_name);
-        stats.corruption_detected++;
-    }
-
-    ESP_LOGI(TAG, "[%s] Current counter=%lu buffer='%s'",
-             task_name, (unsigned long)temp_counter, temp_buffer);
-
-    // หน่วงเวลาเพื่อเปิดโอกาสให้ Task อื่นแทรก
-    vTaskDelay(pdMS_TO_TICKS(200 + (esp_random() % 400)));
-
-    // เขียนข้อมูลใหม่โดยไม่ล็อก
-    shared_data.counter = temp_counter + 1;
-    snprintf(shared_data.shared_buffer, sizeof(shared_data.shared_buffer),
-             "Modified by %s #%lu", task_name, (unsigned long)shared_data.counter);
-    shared_data.checksum = calculate_checksum(shared_data.shared_buffer, shared_data.counter);
-    shared_data.access_count++;
-    stats.access_total++;
-
-    ESP_LOGI(TAG, "[%s] Modified counter=%lu buffer='%s'",
-             task_name, (unsigned long)shared_data.counter, shared_data.shared_buffer);
-
-    gpio_set_level(led_pin, 0);
-    gpio_set_level(LED_CRITICAL, 0);
-}
-
-// Tasks ---------------------------------------------------------
-void high_priority_task(void *pv) {
-    ESP_LOGI(TAG, "High Priority Task started");
-    while (1) {
-        access_shared_resource("HIGH_PRI", LED_TASK1);
-        vTaskDelay(pdMS_TO_TICKS(1500 + (esp_random() % 1000)));
-    }
-}
-
-void medium_priority_task(void *pv) {
-    ESP_LOGI(TAG, "Medium Priority Task started");
-    while (1) {
-        access_shared_resource("MED_PRI", LED_TASK2);
-        vTaskDelay(pdMS_TO_TICKS(1000 + (esp_random() % 800)));
-    }
-}
-
-void low_priority_task(void *pv) {
-    ESP_LOGI(TAG, "Low Priority Task started");
-    while (1) {
-        access_shared_resource("LOW_PRI", LED_TASK3);
-        vTaskDelay(pdMS_TO_TICKS(800 + (esp_random() % 500)));
-    }
-}
-
-void monitor_task(void *pv) {
-    ESP_LOGI(TAG, "System monitor started");
-    while (1) {
-        vTaskDelay(pdMS_TO_TICKS(10000));
-        uint32_t chk = calculate_checksum(shared_data.shared_buffer, shared_data.counter);
-        if (chk != shared_data.checksum && shared_data.access_count > 0) {
-            ESP_LOGE(TAG, "⚠️ CURRENT DATA CORRUPTION DETECTED!");
+        // verify before modify
+        uint32_t calc = checksum(buf, c);
+        if (calc != exp && shared_data.access_count > 0){
             stats.corruption_detected++;
+            ESP_LOGE(TAG,"[%s] ⚠️ DATA CORRUPTION DETECTED! exp=%lu calc=%lu",
+                     name,(unsigned long)exp,(unsigned long)calc);
         }
-        ESP_LOGI(TAG, "\n═══ NO MUTEX MONITOR ═══");
-        ESP_LOGI(TAG, "Counter=%lu  Access=%lu  Corrupted=%lu",
-                 (unsigned long)shared_data.counter,
-                 (unsigned long)stats.access_total,
-                 (unsigned long)stats.corruption_detected);
-        ESP_LOGI(TAG, "Buffer='%s'", shared_data.shared_buffer);
-        ESP_LOGI(TAG, "═════════════════════════\n");
+
+        // simulate work inside CS (ยืดเวลาตาม hold_ms)
+        vTaskDelay(pdMS_TO_TICKS(hold_ms));
+
+        // write
+        shared_data.counter = c + 1;
+        snprintf(shared_data.shared_buffer,sizeof(shared_data.shared_buffer),
+                 "Modified by %s #%lu", name, (unsigned long)shared_data.counter);
+        shared_data.checksum = checksum(shared_data.shared_buffer, shared_data.counter);
+        shared_data.access_count++;
+
+        ESP_LOGI(TAG,"[%s] ✓ Modified: counter=%lu, buffer='%s'",
+                 name,(unsigned long)shared_data.counter, shared_data.shared_buffer);
+
+        gpio_set_level(led_pin,0); gpio_set_level(LED_CRITICAL,0);
+        xSemaphoreGive(xMutex);
+    } else {
+        stats.failed_access++;
+        ESP_LOGW(TAG,"[%s] ✗ Mutex timeout", name);
     }
 }
 
-void app_main(void) {
-    ESP_LOGI(TAG, "Experiment 2: NO MUTEX (Race Condition Demo)");
+/* -------- Tasks -------- */
+// ให้ HIGH พยายามเข้าถี่ แต่ prio ต่ำสุด -> จะได้เข้าช้ากว่า
+static void high_task(void*){
+    ESP_LOGI(TAG,"HIGH_PRI started (prio=%d)", uxTaskPriorityGet(NULL));
+    while(1){
+        access_shared("HIGH_PRI", LED_TASK1, 120);     // hold สั้น
+        vTaskDelay(pdMS_TO_TICKS(800 + (esp_random()%600)));  // ถี่
+    }
+}
+// MED ปกติ
+static void med_task(void*){
+    ESP_LOGI(TAG,"MED_PRI started (prio=%d)", uxTaskPriorityGet(NULL));
+    while(1){
+        access_shared("MED_PRI", LED_TASK2, 160);
+        vTaskDelay(pdMS_TO_TICKS(1200 + (esp_random()%800)));
+    }
+}
+// LOW มี prio สูงสุด และถือ mutex นานขึ้นเพื่อเห็นอิทธิพล
+static void low_task(void*){
+    ESP_LOGI(TAG,"LOW_PRI started (prio=%d)", uxTaskPriorityGet(NULL));
+    while(1){
+        access_shared("LOW_PRI", LED_TASK3, 350);      // จงใจถือ mutex นานขึ้น
+        vTaskDelay(pdMS_TO_TICKS(1400 + (esp_random()%900)));
+    }
+}
 
-    // GPIO setup
-    gpio_set_direction(LED_TASK1, GPIO_MODE_OUTPUT);
-    gpio_set_direction(LED_TASK2, GPIO_MODE_OUTPUT);
-    gpio_set_direction(LED_TASK3, GPIO_MODE_OUTPUT);
-    gpio_set_direction(LED_CRITICAL, GPIO_MODE_OUTPUT);
-    gpio_set_level(LED_TASK1, 0);
-    gpio_set_level(LED_TASK2, 0);
-    gpio_set_level(LED_TASK3, 0);
-    gpio_set_level(LED_CRITICAL, 0);
+// งานกลางกิน CPU ไม่แตะ mutex -> ใช้กดดัน scheduler (ถ้าไม่มี PI จะไปรบกวน low ตอนถือ mutex)
+static void cpu_burst_task(void*){
+    ESP_LOGI(TAG,"CPU_BURST started (prio=%d)", uxTaskPriorityGet(NULL));
+    while(1){
+        vTaskDelay(pdMS_TO_TICKS(2500));
+        ESP_LOGI(TAG,"CPU burst…");
+        for (volatile int i=0;i<1200000;i++) { /* busy */ }
+        ESP_LOGI(TAG,"CPU burst done");
+    }
+}
 
-    // init shared resource
+// Monitor
+static void monitor_task(void*){
+    while(1){
+        vTaskDelay(pdMS_TO_TICKS(12000));
+        uint32_t chk = checksum(shared_data.shared_buffer, shared_data.counter);
+        if (chk != shared_data.checksum && shared_data.access_count>0){
+            stats.corruption_detected++;
+            ESP_LOGE(TAG,"⚠️ CURRENT DATA CORRUPTION DETECTED!");
+        }
+        uint32_t total = stats.successful_access + stats.failed_access;
+        float rate = total? (float)stats.successful_access/total*100.0f : 0.0f;
+        ESP_LOGI(TAG,"\n═══ EXP3 MONITOR (Mutex ON, Changed Priority) ═══");
+        ESP_LOGI(TAG,"Counter=%lu  AccessCount=%lu  Corrupted=%lu  SuccessRate=%.1f%%",
+                 (unsigned long)shared_data.counter,
+                 (unsigned long)shared_data.access_count,
+                 (unsigned long)stats.corruption_detected, rate);
+        ESP_LOGI(TAG,"Buffer='%s'\n", shared_data.shared_buffer);
+    }
+}
+
+void app_main(void){
+    ESP_LOGI(TAG,"Experiment 3 starting… (LOW prio highest, HIGH prio lowest)");
+
+    // LEDs
+    led_setup(LED_TASK1); led_setup(LED_TASK2); led_setup(LED_TASK3); led_setup(LED_CRITICAL);
+
+    // Mutex
+    xMutex = xSemaphoreCreateMutex();
+    if (!xMutex){ ESP_LOGE(TAG,"Create mutex failed!"); return; }
+
+    // Init shared
     shared_data.counter = 0;
     strcpy(shared_data.shared_buffer, "Initial state");
-    shared_data.checksum = calculate_checksum(shared_data.shared_buffer, shared_data.counter);
+    shared_data.checksum = checksum(shared_data.shared_buffer, shared_data.counter);
     shared_data.access_count = 0;
 
-    // สร้าง Tasks
-    xTaskCreate(high_priority_task, "HighPri", 3072, NULL, 5, NULL);
-    xTaskCreate(medium_priority_task, "MedPri", 3072, NULL, 3, NULL);
-    xTaskCreate(low_priority_task, "LowPri", 3072, NULL, 2, NULL);
-    xTaskCreate(monitor_task, "Monitor", 3072, NULL, 1, NULL);
+    // Create tasks with CHANGED priorities
+    xTaskCreate(high_task,      "HighPri",   3072, NULL, PRIORITY_HIGH,      NULL);
+    xTaskCreate(med_task,       "MedPri",    3072, NULL, PRIORITY_MED,       NULL);
+    xTaskCreate(low_task,       "LowPri",    3072, NULL, PRIORITY_LOW,       NULL);
+    xTaskCreate(cpu_burst_task, "CpuBurst",  2048, NULL, PRIORITY_CPU_BURST, NULL);
+    xTaskCreate(monitor_task,   "Monitor",   3072, NULL, PRIORITY_MONITOR,   NULL);
 
-    ESP_LOGI(TAG, "System running — Watch for ⚠️ DATA CORRUPTION messages!");
+    ESP_LOGI(TAG,"Created tasks — High=%d, Med=%d, Low=%d, CPU=%d, Monitor=%d",
+             PRIORITY_HIGH, PRIORITY_MED, PRIORITY_LOW, PRIORITY_CPU_BURST, PRIORITY_MONITOR);
+
+    // quick LED sweep
+    for (int i=0;i<2;i++){
+        gpio_set_level(LED_TASK1,1); vTaskDelay(pdMS_TO_TICKS(120)); gpio_set_level(LED_TASK1,0);
+        gpio_set_level(LED_TASK2,1); vTaskDelay(pdMS_TO_TICKS(120)); gpio_set_level(LED_TASK2,0);
+        gpio_set_level(LED_TASK3,1); vTaskDelay(pdMS_TO_TICKS(120)); gpio_set_level(LED_TASK3,0);
+        gpio_set_level(LED_CRITICAL,1); vTaskDelay(pdMS_TO_TICKS(120)); gpio_set_level(LED_CRITICAL,0);
+    }
+    ESP_LOGI(TAG,"Running — สังเกตว่า LOW_PRI จะเข้าถึงบ่อยและถือ mutex นานสุด");
 }
