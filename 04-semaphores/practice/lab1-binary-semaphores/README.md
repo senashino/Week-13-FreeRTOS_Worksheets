@@ -300,9 +300,10 @@ void app_main(void) {
 2. เปิด Serial Monitor
 3. สังเกตการทำงาน:
    - Producer สร้าง event ทุก 2-5 วินาที
-   - Consumer รอและประมวลผล event
+    - Consumer รอและประมวลผล event
    - Timer event ทุก 8 วินาที
    - กด BOOT button เพื่อสร้าง event ทันที
+    ![1](image.png)
 
 ### ทดลองที่ 2: การทดสอบ Multiple Give
 แก้ไขใน `producer_task` เพื่อ give หลายครั้ง:
@@ -311,7 +312,9 @@ for (int i = 0; i < 3; i++) {
     xSemaphoreGive(xBinarySemaphore);
     vTaskDelay(pdMS_TO_TICKS(100));
 }
-```
+``` 
+        
+![2](image-1.png)
 
 ### ทดลองที่ 3: การทดสอบ Timeout
 แก้ไขใน `consumer_task` เพื่อใช้ timeout สั้น:
@@ -324,8 +327,8 @@ if (xSemaphoreTake(xBinarySemaphore, pdMS_TO_TICKS(3000)) == pdTRUE) {
 ### ตารางบันทึกผล
 | ทดลอง | Events Sent | Events Received | Timer Events | Button Presses | Efficiency |
 |-------|-------------|-----------------|--------------|----------------|------------|
-| 1 (Normal) | | | | | |
-| 2 (Multiple Give) | | | | | |
+| 1 (Normal) | 24 |21 |8 | 8|87.5% |
+| 2 (Multiple Give) |12 | 7| 1|1 |58.3 % |	58.3 %
 | 3 (Short Timeout) | | | | | |
 
 ### คำถามสำหรับการทดลоง
