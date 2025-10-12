@@ -67,7 +67,7 @@ cd memory_pools
 #include "driver/gpio.h"
 
 static const char *TAG = "MEM_POOLS";
-
+    
 // GPIO สำหรับแสดงสถานะ pool
 #define LED_SMALL_POOL     GPIO_NUM_2   // Small pool activity
 #define LED_MEDIUM_POOL    GPIO_NUM_4   // Medium pool activity
@@ -848,21 +848,25 @@ void app_main(void) {
 1. สังเกต LEDs กะพริบเมื่อ pools ถูกใช้งาน
 2. ติดตาม smart allocation ใน Serial Monitor
 3. วิเคราะห์การเลือก pool ที่เหมาะสม
+    ![1](image.png)
 
 ### ทดลองที่ 2: Performance Comparison
 1. ดู benchmark results เปรียบเทียบ pool vs heap
 2. วิเคราะห์ allocation/deallocation times
 3. สังเกต performance benefits ของ pools
+    ![2](image-1.png)
 
 ### ทดลองที่ 3: Pool Visualization
 1. ดู usage bar visualization ใน logs
 2. ติดตาม pool utilization patterns
 3. สังเกต peak usage และ fragmentation
+    ![3](image-2.png)
 
 ### ทดลองที่ 4: Corruption Detection
 1. สังเกต LED_POOL_ERROR เมื่อมี corruption
 2. ดู integrity check results
 3. ทดสอب pattern verification
+    ![4](image-3.png)
 
 ## 📊 การวิเคราะห์ Pool Performance
 

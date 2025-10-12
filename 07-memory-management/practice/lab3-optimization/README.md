@@ -713,21 +713,25 @@ void app_main(void) {
 1. สังเกต LED_STATIC_ALLOC เมื่อใช้ static buffers
 2. ติดตาม allocation performance differences
 3. วิเคราะห์ memory predictability
+    ![1](image.png)
 
 ### ทดลองที่ 2: Memory Alignment
 1. สังเกต LED_ALIGNMENT_OPT เมื่อทำ alignment
 2. ดู performance improvements ใน benchmark
 3. ทดสอบ cache-friendly access patterns
+    ![2](image-1.png)
 
 ### ทดลองที่ 3: Struct Optimization
 1. สังเกต LED_PACKING_OPT และ memory savings
 2. วิเคราะห์ struct size differences
 3. คำนวณ memory waste reduction
+    ![3](image-2.png)
 
 ### ทดลองที่ 4: Memory Region Analysis
 1. ดู memory region utilization reports
 2. ติดตาม fragmentation levels
 3. วิเคราะห์ memory type usage patterns
+        ![4](image-3.png)
 
 ## 📊 การวิเคราะห์ Optimization Results
 
