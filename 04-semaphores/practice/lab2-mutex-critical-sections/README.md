@@ -371,6 +371,7 @@ Comment out mutex operations:
 // xSemaphoreGive(xMutex);
 // }
 ```
+![2](image-1.png)
 
 ### ทดลองที่ 3: ปรับ Priority
 เปลี่ยน priority ของ tasks:
@@ -385,7 +386,7 @@ xTaskCreate(low_priority_task, "LowPri", 3072, NULL, 5, NULL);   // เพิ่
 | ทดลอง | Successful | Failed | Corrupted | Success Rate | สังเกต |
 |-------|------------|--------|-----------|-------------|---------|
 | 1 (With Mutex) | 52 | 0 |2 | 100%| ไม่มีข้อมูลเสียหายร้ายแรง ระบบเข้าคิวอย่างเป็นระเบียบ|
-| 2 (No Mutex) | | | | | |
+| 2 (No Mutex) |34 |-  | 0|- | LED หลายดวงติดพร้อมกัน|
 | 3 (Changed Priority) | | | | | |
 
 ### คำถามสำหรับการทดลอง
