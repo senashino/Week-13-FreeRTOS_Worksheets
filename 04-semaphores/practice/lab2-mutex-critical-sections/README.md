@@ -361,6 +361,7 @@ void app_main(void) {
    - LED แต่ละตัว = Task ที่เข้าถึง shared resource
    - LED_CRITICAL = มีการเข้าถึง critical section
 3. ตรวจสอบ corruption detection
+    ![1](image.png)
 
 ### ทดลองที่ 2: ปิด Mutex (เพื่อดู Race Condition)
 Comment out mutex operations:
@@ -383,7 +384,7 @@ xTaskCreate(low_priority_task, "LowPri", 3072, NULL, 5, NULL);   // เพิ่
 ### ตารางผลการทดลอง
 | ทดลอง | Successful | Failed | Corrupted | Success Rate | สังเกต |
 |-------|------------|--------|-----------|-------------|---------|
-| 1 (With Mutex) | | | | | |
+| 1 (With Mutex) | 52 | 0 |2 | 100%| ไม่มีข้อมูลเสียหายร้ายแรง ระบบเข้าคิวอย่างเป็นระเบียบ|
 | 2 (No Mutex) | | | | | |
 | 3 (Changed Priority) | | | | | |
 
