@@ -648,21 +648,25 @@ void app_main(void) {
 1. สังเกต LED_BARRIER_SYNC กะพริบเมื่อ workers ทั้งหมดผ่าน barrier
 2. ใน Serial Monitor ดู synchronization times
 3. สังเกตการรอคอยของ workers ที่มาถึง barrier เร็วกว่า
+    ![1](image.png)
 
 ### ทดลองที่ 2: Pipeline Processing  
 1. สังเกต LEDs ของแต่ละ stage เปิดตามลำดับ
 2. ติดตาม pipeline data flow ใน Serial Monitor
 3. สังเกต throughput และ processing times
+    ![2](image-1.png)
 
 ### ทดลองที่ 3: Workflow Management
 1. สังเกต LED_WORKFLOW_ACTIVE เมื่อมี workflow ทำงาน
 2. ติดตาม approval process และ resource availability
 3. สังเกต workflow queuing และ retry mechanisms
+    ![3](image-2.png)
 
 ### ทดลองที่ 4: System Performance
 1. ดูสถิติการ synchronization ทุก 15 วินาที
 2. วิเคราะห์ event group states
 3. ติดตาม memory usage และ system health
+    ![4](image-3.png)
 
 ## 📊 การวิเคราะห์ Synchronization Patterns
 
