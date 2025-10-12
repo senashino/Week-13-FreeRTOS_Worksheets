@@ -608,21 +608,26 @@ void app_main(void) {
 1. สังเกต LEDs แสดงสถานะ memory
 2. ติดตาม internal RAM vs SPIRAM usage
 3. วิเคราะห์ performance differences
+    ![1](image.png)
 
 ### ทดลองที่ 2: Memory Monitoring
 1. ดู memory statistics ใน Serial Monitor
 2. ติดตาม allocation/deallocation patterns
 3. สังเกต peak memory usage
+    ![2](image-1.png)
+
 
 ### ทดลองที่ 3: Fragmentation Analysis
 1. สังเกต LED_FRAGMENTATION เมื่อมี fragmentation สูง
 2. วิเคราะห์ fragmentation patterns
 3. ดูผลกระทบต่อ largest free block
+    ![3](image-2.png)
 
 ### ทดลองที่ 4: Memory Leak Detection
 1. ติดตาม potential memory leaks
 2. สังเกต LED_MEMORY_ERROR เมื่อมี leaks
 3. วิเคราะห์ allocation ages
+    ![4](image-3.png)
 
 ## 📊 การวิเคราะห์ผลลัพธ์
 
