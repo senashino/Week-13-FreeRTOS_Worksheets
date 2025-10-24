@@ -7,7 +7,7 @@
 ## 📋 เนื้อหาในหัวข้อ
 
 ### 📖 ทฤษฎี (1 ชั่วโมง)
-- [theory.md](theory.md) - เนื้อหาบรรยายหลัก
+- [FreeRTOS Tasks and Scheduling](./02-tasks-and-scheduling.md) - เนื้อหาบรรยายหลัก
   - Task States และ State Transitions
   - Priority-based Preemptive Scheduling
   - Stack Management และ Memory Allocation

@@ -7,7 +7,7 @@
 ## 📋 เนื้อหาในหัวข้อ
 
 ### 📖 ทฤษฎี (1 ชั่วโมง)
-- [theory.md](theory.md) - เนื้อหาบรรยายหลัก
+- [FreeRTOS Queues - Inter-Task Communication](./03-queues.md) - เนื้อหาบรรยายหลัก
   - Queue Concepts และ FIFO behavior
   - Blocking vs Non-blocking Operations
   - Queue Sets และ Advanced Features
