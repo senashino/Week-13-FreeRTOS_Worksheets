@@ -1,0 +1,19 @@
+menu "Demo toggles"
+    config DEMO_SMP
+        bool "Demo: SMP tasks"
+        default y
+        help
+            Enable multi-core (SMP) FreeRTOS demo tasks.
+
+    config DEMO_IPC
+        bool "Demo: IPC cross-core"
+        default y
+        help
+            Enable inter-processor communication demo.
+
+    config DEMO_GPTIMER
+        bool "Demo: GPTimer + ISR"
+        default y
+        help
+            Enable GPTimer interrupt and LED toggle demo.
+endmenu

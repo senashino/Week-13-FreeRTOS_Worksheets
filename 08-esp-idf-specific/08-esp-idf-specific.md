@@ -1285,5 +1285,7 @@ This comprehensive ESP-IDF FreeRTOS tutorial covers:
 
 This tutorial provides a solid foundation for developing sophisticated FreeRTOS applications on ESP32 using ESP-IDF with terminal-based workflows.
 
+
+![ผลการทดลอง](image.png)
 ---
 **คู่มือนี้ครอบคลุมทุกแง่มุมของ FreeRTOS บน ESP-IDF พร้อมตัวอย่างที่ละเอียดและแบบฝึกหัดที่ใช้งานได้จริง เหมาะสำหรับการเรียนรู้และพัฒนาโปรเจกต์จริง**
